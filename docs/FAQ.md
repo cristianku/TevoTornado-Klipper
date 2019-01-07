@@ -8,15 +8,18 @@ Frequently asked questions
 5. [The "make flash" command doesn't work](#the-make-flash-command-doesnt-work)
 6. [How do I change the serial baud rate?](#how-do-i-change-the-serial-baud-rate)
 7. [Can I run Klipper on something other than a Raspberry Pi 3?](#can-i-run-klipper-on-something-other-than-a-raspberry-pi-3)
-8. [Why can't I move the stepper before homing the printer?](#why-cant-i-move-the-stepper-before-homing-the-printer)
-9. [Why is the Z position_endstop set to 0.5 in the default configs?](#why-is-the-z-position_endstop-set-to-05-in-the-default-configs)
-10. [I converted my config from Marlin and the X/Y axes work fine, but I just get a screeching noise when homing the Z axis](#i-converted-my-config-from-marlin-and-the-xy-axes-work-fine-but-i-just-get-a-screeching-noise-when-homing-the-z-axis)
-11. [My TMC motor driver turns off in the middle of a print](#my-tmc-motor-driver-turns-off-in-the-middle-of-a-print)
-12. [I keep getting random "Lost communication with MCU" errors](#i-keep-getting-random-lost-communication-with-mcu-errors)
-13. [When I set "restart_method=command" my AVR device just hangs on a restart](#when-i-set-restart_methodcommand-my-avr-device-just-hangs-on-a-restart)
-14. [Will the heaters be left on if the Raspberry Pi crashes?](#will-the-heaters-be-left-on-if-the-raspberry-pi-crashes)
-15. [How do I convert a Marlin pin number to a Klipper pin name?](#how-do-i-convert-a-marlin-pin-number-to-a-klipper-pin-name)
-16. [How do I upgrade to the latest software?](#how-do-i-upgrade-to-the-latest-software)
+8. [Can I run multiple instances of Klipper on the same host machine?](#can-i-run-multiple-instances-of-klipper-on-the-same-host-machine)
+9. [Why can't I move the stepper before homing the printer?](#why-cant-i-move-the-stepper-before-homing-the-printer)
+10. [Why is the Z position_endstop set to 0.5 in the default configs?](#why-is-the-z-position_endstop-set-to-05-in-the-default-configs)
+11. [I converted my config from Marlin and the X/Y axes work fine, but I just get a screeching noise when homing the Z axis](#i-converted-my-config-from-marlin-and-the-xy-axes-work-fine-but-i-just-get-a-screeching-noise-when-homing-the-z-axis)
+12. [My TMC motor driver turns off in the middle of a print](#my-tmc-motor-driver-turns-off-in-the-middle-of-a-print)
+13. [I keep getting random "Lost communication with MCU" errors](#i-keep-getting-random-lost-communication-with-mcu-errors)
+14. [My Raspberry Pi keeps rebooting during prints](#my-raspberry-pi-keeps-rebooting-during-prints)
+15. [When I set "restart_method=command" my AVR device just hangs on a restart](#when-i-set-restart_methodcommand-my-avr-device-just-hangs-on-a-restart)
+16. [Will the heaters be left on if the Raspberry Pi crashes?](#will-the-heaters-be-left-on-if-the-raspberry-pi-crashes)
+17. [How do I convert a Marlin pin number to a Klipper pin name?](#how-do-i-convert-a-marlin-pin-number-to-a-klipper-pin-name)
+18. [How do I cancel an M109/M190 "wait for temperature" request?](#how-do-i-cancel-an-m109m190-wait-for-temperature-request)
+19. [How do I upgrade to the latest software?](#how-do-i-upgrade-to-the-latest-software)
 
 ### How can I donate to the project?
 
@@ -146,6 +149,23 @@ for that particular machine. See the
 [install-octopi.sh](../scripts/install-octopi.sh) script for further
 information on the necessary Linux admin steps.
 
+### Can I run multiple instances of Klipper on the same host machine?
+
+It is possible to run multiple instances of the Klipper host software,
+but doing so requires Linux admin knowledge. The Klipper installation
+scripts ultimately cause the following Unix command to be run:
+```
+~/klippy-env/bin/python ~/klipper/klippy/klippy.py ~/printer.cfg -l /tmp/klippy.log
+```
+One can run multiple instances of the above command as long as each
+instance has its own printer config file and its own log file.
+
+If you choose to do this, you will need to implement the necessary
+start, stop, and installation scripts (if any). The
+[install-octopi.sh](../scripts/install-octopi.sh) script and the
+[klipper-start.sh](../scripts/klipper-start.sh) script may be useful
+as examples.
+
 ### Why can't I move the stepper before homing the printer?
 
 The code does this to reduce the chance of accidentally commanding the
@@ -238,12 +258,19 @@ This is commonly caused by hardware errors on the USB connection
 between the host machine and the micro-controller. Things to look for:
 - Use a good quality USB cable between the host machine and
   micro-controller. Make sure the plugs are secure.
-- If using a Raspberry Pi, use a good quality power supply for the
-  Raspberry Pi and use a good quality USB cable to connect that power
-  supply to the Pi.
+- If using a Raspberry Pi, use a
+  [good quality power supply](https://www.raspberrypi.org/documentation/hardware/raspberrypi/power/README.md)
+  for the Raspberry Pi and use a
+  [good quality USB cable](https://www.raspberrypi.org/forums/viewtopic.php?p=589877#p589877)
+  to connect that power supply to the Pi. If you get "under voltage"
+  warnings from OctoPrint, this is related to the power supply and it
+  must be fixed.
 - Make sure the printer's power supply is not being overloaded. (Power
   fluctuations to the micro-controller's USB chip may result in resets
   of that chip.)
+- Verify stepper, heater, and other printer wires are not crimped or
+  frayed. (Printer movement may place stress on a faulty wire causing
+  it to lose contact, briefly short, or generate excessive noise.)
 - There have been reports of high USB noise when both the printer's
   power supply and the host's 5V power supply are mixed. (If you find
   that the micro-controller powers on when either the printer's power
@@ -253,6 +280,13 @@ between the host machine and the micro-controller. Things to look for:
   if the micro-controller board can not configure its power source,
   one may modify a USB cable so that it does not carry 5V power
   between the host and micro-controller.)
+
+### My Raspberry Pi keeps rebooting during prints
+
+This is most likely do to voltage fluctuations. Follow the same
+troubleshooting steps for a
+["Lost communication with MCU"](#i-keep-getting-random-lost-communication-with-mcu-errors)
+error.
 
 ### When I set "restart_method=command" my AVR device just hangs on a restart
 
@@ -340,6 +374,17 @@ cases, Marlin chose their own pin numbering scheme. Klipper does not
 support these custom pin numbers - check Marlin's fastio headers (see
 above) to translate these pin numbers to their standard hardware
 names.
+
+### How do I cancel an M109/M190 "wait for temperature" request?
+
+Navigate to the OctoPrint terminal tab and issue an M112 command in
+the terminal box. The M112 command will cause Klipper to enter into a
+"shutdown" state, and it will cause OctoPrint to disconnect from
+Klipper. Navigate to the OctoPrint connection area and click on
+"Connect" to cause OctoPrint to reconnect. Navigate back to the
+terminal tab and issue a FIRMWARE_RESTART command to clear the Klipper
+error state.  After completing this sequence, the previous heating
+request will be canceled and a new print may be started.
 
 ### How do I upgrade to the latest software?
 

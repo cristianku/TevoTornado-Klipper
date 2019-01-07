@@ -17,12 +17,14 @@ class MCU_SPI:
         shutdown_msg = "".join(["%02x" % (x,) for x in shutdown_seq])
         self.oid = self.mcu.create_oid()
         if pin is None:
-            self.mcu.add_config_cmd(
+            self.config_msg = (
                 "config_spi_without_cs oid=%d bus=%d mode=%d rate=%d"
                 " shutdown_msg=%s" % (
                     self.oid, bus, mode, speed, shutdown_msg))
         else:
-            self.mcu.add_config_cmd(
+            # Set all CS pins high before first config_spi
+            self.mcu.add_config_cmd("set_digital_out pin=%s value=1" % (pin,))
+            self.config_msg = (
                 "config_spi oid=%d bus=%d pin=%s mode=%d rate=%d"
                 " shutdown_msg=%s" % (
                     self.oid, bus, pin, mode, speed, shutdown_msg))
@@ -36,6 +38,7 @@ class MCU_SPI:
     def get_command_queue(self):
         return self.cmd_queue
     def build_config(self):
+        self.mcu.add_config_cmd(self.config_msg)
         self.spi_send_cmd = self.mcu.lookup_command(
             "spi_send oid=%c data=%*s", cq=self.cmd_queue)
         self.spi_transfer_cmd = self.mcu.lookup_command(
@@ -62,6 +65,7 @@ def MCU_SPI_from_config(config, mode, pin_option="cs_pin",
     cs_pin_params = ppins.lookup_pin(cs_pin)
     pin = cs_pin_params['pin']
     if pin == 'None':
+        ppins.reset_pin_sharing(cs_pin_params)
         pin = None
     # Load bus parameters
     speed = config.getint('spi_speed', default_speed, minval=100000)
