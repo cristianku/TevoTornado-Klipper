@@ -99,7 +99,7 @@ invoked, and it may invoke sendf() at any time from a task handler.
 
 ### Output responses
 
-To simplify debugging, there is also has an output() C function. For
+To simplify debugging, there is also an output() C function. For
 example:
 
 ```
@@ -115,7 +115,7 @@ Declaring constants
 Constants can also be exported. For example, the following:
 
 ```
-DECL_CONSTANT(SERIAL_BAUD, 250000);
+DECL_CONSTANT("SERIAL_BAUD", 250000);
 ```
 
 would export a constant named "SERIAL_BAUD" with a value of 250000

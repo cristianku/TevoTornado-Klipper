@@ -19,7 +19,8 @@ class DisplayBase:
         self.all_framebuffers = [(self.vram[i], bytearray('~'*128), i)
                                  for i in range(8)]
         # Cache fonts and icons in display byte order
-        self.font = [self._swizzle_bits(c) for c in font8x14.VGA_FONT]
+        self.font = [self._swizzle_bits(bytearray(c))
+                     for c in font8x14.VGA_FONT]
         self.icons = {}
         for name, icon in icons.Icons16x16.items():
             top1, bot1 = self._swizzle_bits([d >> 8 for d in icon])
@@ -177,11 +178,11 @@ class UC1701(DisplayBase):
         logging.info("uc1701 initialized")
 
 # The SSD1306 supports both i2c and "4-wire" spi
-class SSD1306(UC1701):
+class SSD1306(DisplayBase):
     def __init__(self, config):
         cs_pin = config.get("cs_pin", None)
         if cs_pin is None:
-            io = I2C(config, 120)
+            io = I2C(config, 60)
         else:
             io = SPI4wire(config, "dc_pin")
         DisplayBase.__init__(self, io)
