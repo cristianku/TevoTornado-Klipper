@@ -6,6 +6,9 @@
 - bmg bondtech extruder with LV8729
 Welcome to the Klipper project!
 
+https://github.com/cristianku/TevoTornado-Klipper/blob/master/config/printer-tevo-tornado-bltouch-tmc2130_on_xyz_SPI-lv8729_on_e_e3d_PT100.cfg
+
+
 *********
 
 [![Klipper](docs/img/klipper-logo-small.png)](https://www.klipper3d.org/)
