@@ -1,4 +1,12 @@
+*** IN CONFIG YOU CAN FIND THE CUSTOMIZED VERSION FOR TEVO TORNADO where I have implemented:
+- tmc2130 in SPI mode ( external additional cablings ) on x y z
+- BLTOUCH
+- a drivers big fan that turns on and off when the steppers turns on and off
+- sensorless homing for x and y
+- bmg bondtech extruder with LV8729
 Welcome to the Klipper project!
+
+*********
 
 [![Klipper](docs/img/klipper-logo-small.png)](https://www.klipper3d.org/)
 
